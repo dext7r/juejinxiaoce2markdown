@@ -1,3 +1,5 @@
 html2text
 pyyaml
 requests
+tqdm
+threading
