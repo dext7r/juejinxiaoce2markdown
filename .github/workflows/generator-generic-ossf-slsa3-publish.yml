@@ -1,0 +1,72 @@
+name: 爬取掘金小册并上传结果
+
+on:
+  workflow_dispatch:
+    inputs:
+      sessionid:
+        description: '掘金 sessionid'
+        required: true
+      cookie:
+        description: '掘金 cookie'
+        required: true
+      fetch_book_ids_online:
+        description: '是否在线获取booklet_id列表'
+        type: boolean
+        default: true
+      book_ids:
+        description: '要爬取的book_ids (用逗号分隔,如果fetch_book_ids_online为true则可以留空)'
+        required: false
+      save_dir:
+        description: '保存小册的目录'
+        default: 'book'
+      overwrite_existing:
+        description: '是否覆盖已爬取的文件'
+        type: boolean
+        default: false
+
+jobs:
+  scrape-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ACTION_SECRET }}
+
+      - name: 设置 Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 更新配置文件
+        run: |
+          echo "sessionid: '${{ github.event.inputs.sessionid }}'" > config.yml
+          echo "cookie: '${{ github.event.inputs.cookie }}'" >> config.yml
+          echo "fetch_book_ids_online: ${{ github.event.inputs.fetch_book_ids_online }}" >> config.yml
+          echo "book_ids: [${{ github.event.inputs.book_ids }}]" >> config.yml
+          echo "save_dir: '${{ github.event.inputs.save_dir }}'" >> config.yml
+          echo "overwrite_existing: ${{ github.event.inputs.overwrite_existing }}" >> config.yml
+
+      - name: 执行爬虫脚本
+        run: python main.py
+
+      - name: 上传爬取结果
+        uses: actions/upload-artifact@v2
+        with:
+          name: juejin-books
+          path: ${{ github.event.inputs.save_dir }}
+
+      - name: 提交更改
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "更新掘金小册内容" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_SECRET }}
