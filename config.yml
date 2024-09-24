@@ -1,6 +1,6 @@
-d30b952-ebc1-4fe7-b098-4c7bc1fd720d
+sessionid: '' # 填写登录掘金之后 cookie 里的 sessionid
+cookie: '' # 填写登录掘金之后 cookie 里的 cookie
 fetch_book_ids_online: true # 是否在线获取booklet_id列表
 book_ids: [] # 这里可以留空，如果fetch_book_ids_online为true
-save_dir: "book" # 保存小册的目录，默认会在当前目录下新建一个 book 目录
+save_dir: 'book' # 保存小册的目录，默认会在当前目录下新建一个 book 目录
 overwrite_existing: false # 是否覆盖已爬取的文件，默认不覆盖
-
